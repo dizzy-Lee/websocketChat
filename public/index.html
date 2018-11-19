@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <input type="text" id="name">
+  <button id="setname">设置</button>
+  <input type="text" id="text">
+  <button id="btn" type = "button">发送</button>
+  <div id="container">
+
+  </div>
+  <script>
+    var ws = null;
+
+    document.getElementById('setname').onclick = function() {
+      var name = document.getElementById('name').value;
+      if (name === '') return console.log('名字为空');
+
+      ws = new WebSocket('ws://localhost:2333');
+
+      ws.onopen = function() {
+        ws.send(JSON.stringify({
+          name: name,
+          type: 'setname'
+        }));
+      }
+
+      document.getElementById('btn').onclick = send;
+      document.getElementById('text').onkeyup = function(e) {
+        if (e.keyCode !== 13) return;
+        send();
+      }
+
+      ws.onmessage = function(e) {
+        let con = document.getElementById('container')
+        con.insertBefore(createChatPanel(JSON.parse(e.data)), con.children[0]);
+      }
+      document.getElementById('setname').setAttribute('disabled', true);
+    }
+
+    function createChatPanel(data) {
+      let name = data.name;
+      let text = data.text;
+
+      let div = document.createElement('div')
+      let span1 = document.createElement('span1');
+      let span2 = document.createElement('span2');
+      
+      span1.innerHTML = name + ' ' + (new Date()).toString();
+      span2.innerHTML = text;
+
+      span1.style.color = '#66ccff';
+      span1.style.fontWeight = '900';
+
+      div.appendChild(span1);
+      div.appendChild(document.createElement('br'));
+      div.appendChild(span2);
+
+      return div;
+    }
+
+    function send() {
+      if (document.getElementById('text').value === '') return;
+        ws.send(JSON.stringify({
+          text: document.getElementById('text').value,
+          type: "chat"
+        }));
+        document.getElementById('text').value = ''
+    }
+  </script>
+</body>
+</html>
